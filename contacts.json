@@ -1,0 +1,23 @@
+[
+  {
+    "id": "ea76c89f-339a-4b06-a531-115b84da4443",
+    "name": "Albertina",
+    "number": "244935048692",
+    "group": "Geral",
+    "createdAt": "2026-06-09T19:53:17.072Z"
+  },
+  {
+    "id": "7268f23c-6f9f-4248-87db-3ef8c6b28b3a",
+    "name": "minha mae",
+    "number": "244923226501",
+    "group": "Geral",
+    "createdAt": "2026-06-09T19:53:40.407Z"
+  },
+  {
+    "id": "5feb19b4-24ee-434d-a28a-5c76dbffdf25",
+    "name": "João Jony",
+    "number": "2449459509",
+    "group": "Geral",
+    "createdAt": "2026-06-10T03:00:15.119Z"
+  }
+]
