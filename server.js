@@ -1,5 +1,6 @@
 const express = require('express');
 const { Client, LocalAuth } = require('whatsapp-web.js');
+const puppeteer = require('puppeteer');
 const QRCode = require('qrcode');
 const multer = require('multer');
 const { Server } = require('socket.io');
@@ -16,6 +17,8 @@ const io = new Server(server);
 const PORT = process.env.PORT || 3000;
 const DELAY_MS = parseInt(process.env.DELAY_MS) || 30000;
 const BATCH_SIZE = parseInt(process.env.BATCH_SIZE) || 50;
+// Se usares um Persistent Disk no Render, define SESSION_DIR=/data/session
+const SESSION_DIR = process.env.SESSION_DIR || path.join(__dirname, 'session');
 
 app.use(express.json());
 app.use(express.static('public'));
@@ -73,8 +76,7 @@ function saveMessages(messages) {
 }
 
 // Garantir diretórios necessários
-['session', 'uploads', 'public'].forEach(dir => {
-    const dirPath = path.join(__dirname, dir);
+[SESSION_DIR, path.join(__dirname, 'uploads'), path.join(__dirname, 'public')].forEach(dirPath => {
     if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
 });
 
@@ -90,11 +92,11 @@ function initializeClient() {
     client = new Client({
         authStrategy: new LocalAuth({
             clientId: "bulk-sender",
-            dataPath: path.join(__dirname, 'session')
+            dataPath: SESSION_DIR
         }),
         puppeteer: {
             headless: true,
-            executablePath: '/usr/bin/google-chrome-stable',
+            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || puppeteer.executablePath(),
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
@@ -173,7 +175,12 @@ function initializeClient() {
         }
     });
 
-    client.initialize();
+    client.initialize().catch((err) => {
+        console.error('Erro ao inicializar o cliente WhatsApp:', err.message);
+        isReady = false;
+        io.emit('auth_failure', { message: 'Erro ao iniciar o navegador: ' + err.message });
+        setTimeout(() => initializeClient(), 15000);
+    });
 }
 
 initializeClient();
